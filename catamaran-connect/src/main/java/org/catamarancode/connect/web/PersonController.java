@@ -1,0 +1,186 @@
+package org.catamarancode.connect.web;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.validation.Valid;
+
+import org.apache.commons.collections.map.ListOrderedMap;
+import org.catamarancode.connect.entity.Person;
+import org.catamarancode.connect.entity.support.Repository;
+import org.catamarancode.connect.web.support.DatePropertyEditor;
+import org.catamarancode.spring.mvc.DisplayMessage;
+import org.hibernate.criterion.Order;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@Controller
+@RequestMapping("/persons")
+public class PersonController {
+
+	private Logger logger = LoggerFactory.getLogger(PersonController.class);
+
+	@Resource
+	private Repository repository;
+
+	@RequestMapping(value = "/create", method = RequestMethod.GET)
+	public void create() {
+		return;
+	}
+
+	@RequestMapping(value = "/{personId}", method = RequestMethod.GET)
+	public String view(@PathVariable long personId,
+			Map<String, Object> model) {
+		Person person = (Person) Person.objects.load(personId);
+		model.put("person", person);
+		
+		// Generate a list of alternative next call dates for buttons
+		ListOrderedMap dates = new ListOrderedMap();
+		Calendar cal = new GregorianCalendar();		
+		resetTime(cal);
+		
+		cal.add(Calendar.DATE, 1);		
+		dates.put("Tomorrow", cal.getTime());
+		
+		cal.add(Calendar.DATE, -1);
+		cal.add(Calendar.WEEK_OF_YEAR, 1);
+		dates.put("Next week", cal.getTime());
+		
+		cal.add(Calendar.WEEK_OF_YEAR, 1);
+		dates.put("In two weeks", cal.getTime());
+		
+		resetTime(cal);
+		cal.add(Calendar.MONTH, 1);
+		dates.put("In one month", cal.getTime());
+		
+		cal.add(Calendar.MONTH, 2);
+		dates.put("In three months", cal.getTime());
+		
+		cal.add(Calendar.MONTH, 3);
+		dates.put("In six months", cal.getTime());
+
+		model.put("dateAlternativeValues", dates);
+		
+		model.put("dateAlternativeKeys", dates.asList());
+		
+		return "person-view";
+	}
+	
+	private void resetTime(Calendar cal) {
+		cal.setTimeInMillis(System.currentTimeMillis());
+		cal.set(Calendar.HOUR_OF_DAY, 6);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+	}
+
+	@RequestMapping(value = "/{personId}/edit", method = RequestMethod.GET)
+	public String edit(@PathVariable long personId,
+			Map<String, Object> model) {
+		Person person = (Person) Person.objects.load(personId);
+		model.put("person", person);
+		return "person-edit";
+	}
+	
+	@RequestMapping(value = "", method = RequestMethod.GET)
+	public String root(Map<String, Object> model) {
+		return all(model);
+	}
+	
+	@RequestMapping(value = "/", method = RequestMethod.GET)
+	public String slash(Map<String, Object> model) {
+		return all(model);
+	}
+
+	@RequestMapping(value = "/all", method = RequestMethod.GET)
+	public String all(Map<String, Object> model) {
+
+		Person person = new Person();
+		// PersistableBase.setEntityServices(services)
+
+		List<Person> list = Person.objects.all();
+		logger.debug("Got people: " + list.size());
+		model.put("persons", list);
+		return "persons-all";
+	}
+	
+	@RequestMapping(value = "/by-next-call-date", method = RequestMethod.GET)
+	public String byNextCallDate(Map<String, Object> model) {
+
+		Person person = new Person();
+		// PersistableBase.setEntityServices(services)
+		
+		List<Person> list = Person.objects.order(Order.asc("nextCallDate"));
+		logger.debug("Got people: " + list.size());
+		model.put("persons", list);
+		return "persons-all";
+	}
+
+	/**
+	 * Validation: @see
+	 * http://static.springsource.org/spring/docs/3.1.x/spring-framework
+	 * -reference/html/validation.html#validation-beanvalidation
+	 * 
+	 * @param person
+	 * @param errors
+	 * @param model
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/save", method = RequestMethod.POST)
+	public String save(@ModelAttribute("person") @Valid Person person,
+			BindingResult errors, Map<String, Object> model) {
+
+		if (errors.hasErrors()) {
+			return "person-edit";
+		}
+
+		long id = person.save();
+
+		DisplayMessage.addToThisPage(model, "Saved with id " + id, true);
+		return "redirect:" + id;
+	}
+	
+	@RequestMapping(value = "/set-call-date", method = RequestMethod.POST)	
+	public String setCallDate(@RequestParam("id") long personId, @RequestParam("nextCallDate") Date nextCallDate) {
+	// public String setCallDate(@RequestParam("id") long personId, @RequestParam("nextCallDate") @DateTimeFormat(iso=ISO.DATE) Date nextCallDate) {
+		
+		Person person = Person.objects.load(personId);
+		person.setNextCallDate(nextCallDate);
+		person.save();
+		
+		return "redirect:" + personId;
+	}
+
+	/**
+	 * The StringTrimmerEditor is required in order to convert empty parameter
+	 * inputs into null. And that is, in turn, required for the JSR-303
+	 * validation framework to use @Pattern and other validator annotations
+	 * while still allowing blank input values
+	 * 
+	 * In Spring Framework 3.2 there will be a better way to configure this globally, see https://jira.springsource.org/browse/SPR-9112
+	 * @see 
+	 * 
+	 * @param binder
+	 */
+	@InitBinder
+	public void initBinder(WebDataBinder binder) {
+		binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
+		binder.registerCustomEditor(Date.class, new DatePropertyEditor("MMM d, yyyy"));		
+	}
+
+}
