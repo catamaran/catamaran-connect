@@ -12,6 +12,12 @@ spring-mvc-servlet.xml to configure Spring-configured objects (beans).
 applicationContext.xml is the default file loaded by org.springframework.web.context.ContextLoaderListener.  
 To split configuration across multiple spring files, consult web.xml -->
 
+<!-- Scan classes with annotations for spring bean definitions
+see: http://matthiaswessendorf.wordpress.com/2010/04/17/spring-3-0-and-jsr-330-part/
+and: http://richardchesterwood.blogspot.com/2011/03/using-sessions-in-spring-mvc-including.html
+-->
+<context:component-scan base-package="org.catamarancode.connect.service" />
+
 <!-- Load environment-specific properties such as database ports and passwords -->
 <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
     

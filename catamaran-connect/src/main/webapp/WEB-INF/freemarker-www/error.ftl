@@ -10,7 +10,8 @@
 <body>
 <div id="bodyContent">
 <div id="content">
-	<h1>Sorry, but there has been some sort of error.</h1>				
+	<h1>Sorry, but there has been some sort of error.</h1>		
+	<h2><a href="<@spring.url '/' />">Home</a></h2>		
 	<#if logExceptionMessage??>
 		<p>${logExceptionMessage}</p>
 	</#if>			

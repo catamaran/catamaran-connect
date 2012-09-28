@@ -16,6 +16,7 @@ import org.catamarancode.connect.entity.type.Priority;
 import org.catamarancode.connect.entity.type.Sensitivity;
 import org.catamarancode.entity.support.EntityFinder;
 import org.catamarancode.entity.support.PersistableBase;
+import org.hibernate.annotations.Index;
 import org.hibernate.validator.constraints.Email;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,8 +42,11 @@ public class Person extends PersistableBase {
 	private String firstName;
 	private String middleName;
 	private String lastName;
+	private String jobTitle;
 	private String nickname;
+
 	private String shortName;
+
 	private String maidenName;
 	private Gender gender;
 	private Date birthday;
@@ -67,19 +71,46 @@ public class Person extends PersistableBase {
 	private List<Note> notes;
 	private String company;
 	private Date nextCallDate;
-
+	private boolean deleted;
 	public Date getBirthday() {
 		return birthday;
 	}
-
 	@Size(min = 2)
 	public String getCompany() {
 		return company;
 	}
 
+	@Transient
+	public String getDisplayName() {
+
+		if (!StringUtils.hasText(firstName) && !StringUtils.hasText(lastName)
+				&& email1 != null) {
+			return this.getEmail1LocalPart();
+		}
+
+		return this.getName();
+	}
+
 	@Email
 	public String getEmail1() {
 		return email1;
+	}
+
+	/**
+	 * TODO: Refactor out into a util
+	 * 
+	 * @return
+	 */
+	@Transient
+	public String getEmail1LocalPart() {
+		if (!StringUtils.hasText(this.email1)) {
+			return null;
+		}
+		int atPos = this.email1.indexOf("@");
+		if (atPos > 0) {
+			return this.email1.substring(0, atPos);
+		}
+		return null;
 	}
 
 	@Email
@@ -111,6 +142,12 @@ public class Person extends PersistableBase {
 		return fax3;
 	}
 
+	@Index(name="firstNameIndex")
+	@Size(min = 2)
+	public String getFirstName() {
+		return firstName;
+	}
+
 	@Transient
 	public String getFirstNameOrEmailLocal() {
 		if (!StringUtils.hasText(this.firstName)) {
@@ -119,20 +156,30 @@ public class Person extends PersistableBase {
 		return firstName;
 	}
 
-	@Size(min = 2)
-	public String getFirstName() {
-		return firstName;
+	public Gender getGender() {
+		return gender;
 	}
 
-	@Transient
-	public String getDisplayName() {
+	public String getHobby() {
+		return hobby;
+	}
 
-		if (!StringUtils.hasText(firstName) && !StringUtils.hasText(lastName)
-				&& email1 != null) {
-			return this.getEmail1LocalPart();
-		}
+	public String getJobTitle() {
+		return jobTitle;
+	}
 
-		return this.getName();
+	@Index(name="lastNameIndex")
+	@Size(min = 2)
+	public String getLastName() {
+		return lastName;
+	}
+
+	public String getMaidenName() {
+		return maidenName;
+	}
+
+	public String getMiddleName() {
+		return middleName;
 	}
 
 	@Transient
@@ -150,42 +197,9 @@ public class Person extends PersistableBase {
 		return firstName + " " + middleStr + lastName;
 	}
 
-	/**
-	 * TODO: Refactor out into a util
-	 * 
-	 * @return
-	 */
-	@Transient
-	public String getEmail1LocalPart() {
-		if (!StringUtils.hasText(this.email1)) {
-			return null;
-		}
-		int atPos = this.email1.indexOf("@");
-		if (atPos > 0) {
-			return this.email1.substring(0, atPos);
-		}
-		return null;
-	}
-
-	public Gender getGender() {
-		return gender;
-	}
-
-	public String getHobby() {
-		return hobby;
-	}
-
-	@Size(min = 2)
-	public String getLastName() {
-		return lastName;
-	}
-
-	public String getMaidenName() {
-		return maidenName;
-	}
-
-	public String getMiddleName() {
-		return middleName;
+	@Index(name="nextCallDateIndex")
+	public Date getNextCallDate() {
+		return nextCallDate;
 	}
 
 	public String getNickname() {
@@ -245,12 +259,48 @@ public class Person extends PersistableBase {
 		return type;
 	}
 
+	public String getWebsite() {
+		return website;
+	}
+
+	public boolean isDeleted() {
+		return deleted;
+	}
+
 	public void setBirthday(Date birthday) {
 		this.birthday = birthday;
 	}
 
 	public void setCompany(String company) {
 		this.company = company;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+
+	public void setEmail1(String email1) {
+		this.email1 = email1;
+	}
+
+	public void setEmail2(String email2) {
+		this.email2 = email2;
+	}
+
+	public void setEmail3(String email3) {
+		this.email3 = email3;
+	}
+
+	public void setFax1(String fax1) {
+		this.fax1 = fax1;
+	}
+
+	public void setFax2(String fax2) {
+		this.fax2 = fax2;
+	}
+
+	public void setFax3(String fax3) {
+		this.fax3 = fax3;
 	}
 
 	public void setFirstName(String firstName) {
@@ -265,6 +315,10 @@ public class Person extends PersistableBase {
 		this.hobby = hobby;
 	}
 
+	public void setJobTitle(String jobTitle) {
+		this.jobTitle = jobTitle;
+	}
+
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
@@ -277,6 +331,10 @@ public class Person extends PersistableBase {
 		this.middleName = middleName;
 	}
 
+	public void setNextCallDate(Date nextCallDate) {
+		this.nextCallDate = nextCallDate;
+	}
+
 	public void setNickname(String nickname) {
 		this.nickname = nickname;
 	}
@@ -287,6 +345,22 @@ public class Person extends PersistableBase {
 
 	public void setOccupation(String occupation) {
 		this.occupation = occupation;
+	}
+
+	public void setPhone1(String phone1) {
+		this.phone1 = phone1;
+	}
+
+	public void setPhone2(String phone2) {
+		this.phone2 = phone2;
+	}
+
+	public void setPhone3(String phone3) {
+		this.phone3 = phone3;
+	}
+
+	public void setPhone4(String phone4) {
+		this.phone4 = phone4;
 	}
 
 	public void setPriority(Priority priority) {
@@ -313,60 +387,8 @@ public class Person extends PersistableBase {
 		this.type = type;
 	}
 
-	public String getWebsite() {
-		return website;
-	}
-
 	public void setWebsite(String website) {
 		this.website = website;
-	}
-
-	public void setEmail1(String email1) {
-		this.email1 = email1;
-	}
-
-	public void setEmail2(String email2) {
-		this.email2 = email2;
-	}
-
-	public void setEmail3(String email3) {
-		this.email3 = email3;
-	}
-
-	public void setPhone1(String phone1) {
-		this.phone1 = phone1;
-	}
-
-	public void setPhone2(String phone2) {
-		this.phone2 = phone2;
-	}
-
-	public void setPhone3(String phone3) {
-		this.phone3 = phone3;
-	}
-
-	public void setPhone4(String phone4) {
-		this.phone4 = phone4;
-	}
-
-	public void setFax1(String fax1) {
-		this.fax1 = fax1;
-	}
-
-	public void setFax2(String fax2) {
-		this.fax2 = fax2;
-	}
-
-	public void setFax3(String fax3) {
-		this.fax3 = fax3;
-	}
-
-	public Date getNextCallDate() {
-		return nextCallDate;
-	}
-
-	public void setNextCallDate(Date nextCallDate) {
-		this.nextCallDate = nextCallDate;
 	}
 
 }

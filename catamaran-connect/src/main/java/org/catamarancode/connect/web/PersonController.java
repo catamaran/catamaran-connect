@@ -1,10 +1,13 @@
 package org.catamarancode.connect.web;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -12,12 +15,17 @@ import javax.validation.Valid;
 import org.apache.commons.collections.map.ListOrderedMap;
 import org.catamarancode.connect.entity.Person;
 import org.catamarancode.connect.entity.support.Repository;
+import org.catamarancode.connect.service.IdentifiableListing;
 import org.catamarancode.connect.web.support.DatePropertyEditor;
 import org.catamarancode.spring.mvc.DisplayMessage;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
@@ -29,17 +37,26 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
+@Scope("request")
 @RequestMapping("/persons")
 public class PersonController {
 
 	private Logger logger = LoggerFactory.getLogger(PersonController.class);
 
+	/**
+	 * TODO: Find out if @Resource will also work
+	 */
+	@Autowired
+	private IdentifiableListing personListing;
+	
 	@Resource
 	private Repository repository;
 
 	@RequestMapping(value = "/create", method = RequestMethod.GET)
-	public void create() {
-		return;
+	public String create(Map<String, Object> model) {
+		Person person = new Person();
+		model.put("person", person);
+		return "person-edit";
 	}
 
 	@RequestMapping(value = "/{personId}", method = RequestMethod.GET)
@@ -47,6 +64,10 @@ public class PersonController {
 			Map<String, Object> model) {
 		Person person = (Person) Person.objects.load(personId);
 		model.put("person", person);
+		
+		// Prev/next
+		personListing.setCurrent(personId);
+		model.put("lastListView", personListing);
 		
 		// Generate a list of alternative next call dates for buttons
 		ListOrderedMap dates = new ListOrderedMap();
@@ -96,6 +117,25 @@ public class PersonController {
 		return "person-edit";
 	}
 	
+	@RequestMapping(value = "/{personId}/delete", method = RequestMethod.GET)
+	public String delete(@PathVariable long personId,
+			Map<String, Object> model) {
+		Person person = (Person) Person.objects.load(personId);
+		person.setDeleted(true);
+		person.save();
+		Long nextId = this.personListing.getNext();
+		this.personListing.remove(personId);
+		if (nextId == null) {
+			nextId = this.personListing.getFirst();
+			if (nextId == null) {
+				this.personListing.setCurrent(null);
+				return "redirect:/";
+			}
+		}	
+		
+		return "redirect:/persons/" + nextId.toString();
+	}
+	
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String root(Map<String, Object> model) {
 		return all(model);
@@ -112,8 +152,19 @@ public class PersonController {
 		Person person = new Person();
 		// PersistableBase.setEntityServices(services)
 
-		List<Person> list = Person.objects.all();
+		//List<Person> list = Person.objects.all();
+		Set<Criterion> criteria = new HashSet<Criterion>();
+    	criteria.add(Restrictions.eq("deleted", false));
+    	
+		List<Order> orders = new ArrayList<Order>();
+		orders.add(Order.asc("lastName").ignoreCase());
+		orders.add(Order.asc("firstName").ignoreCase());
+		List<Person> list = Person.objects.filter(criteria, orders);
 		logger.debug("Got people: " + list.size());
+		
+		// Save to HttpSession so that we can support previous/next navigation on view screens
+		personListing.reset(list, "Everyone", "persons/all");
+		
 		model.put("persons", list);
 		return "persons-all";
 	}
@@ -155,7 +206,7 @@ public class PersonController {
 		return "redirect:" + id;
 	}
 	
-	@RequestMapping(value = "/set-call-date", method = RequestMethod.POST)	
+	@RequestMapping(value = "/set-call-date", method = RequestMethod.GET)	
 	public String setCallDate(@RequestParam("id") long personId, @RequestParam("nextCallDate") Date nextCallDate) {
 	// public String setCallDate(@RequestParam("id") long personId, @RequestParam("nextCallDate") @DateTimeFormat(iso=ISO.DATE) Date nextCallDate) {
 		

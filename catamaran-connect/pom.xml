@@ -10,6 +10,15 @@
   
   <dependencies>
   	
+  	<!--
+  	Won't work with straight Tomcat, requires GlassFish/Jboss/WELD 
+	<dependency>
+  		<groupId>javax</groupId>
+  		<artifactId>javaee-api</artifactId>
+  		<version>6.0</version>
+	</dependency>
+	-->  	
+	  	
 	<dependency>
       <groupId>org.catamarancode</groupId>
       <artifactId>catamaran-core</artifactId>
@@ -25,7 +34,7 @@
     <dependency>
       <groupId>org.catamarancode</groupId>
       <artifactId>catamaran-entity</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>2.0-SNAPSHOT</version>
     </dependency>
 	
 	<dependency>
@@ -85,7 +94,7 @@
 	<dependency>
 		<groupId>commons-logging</groupId>
 		<artifactId>commons-logging</artifactId>
-		<version>1.1</version>
+		<version>1.1.1</version>
 	</dependency>
 	<dependency>
 		<groupId>commons-codec</groupId>
@@ -102,14 +111,15 @@
 		<artifactId>commons-collections</artifactId>
 		<version>3.2.1</version>
 	</dependency>
-		
+
+	<!-- conflicts with javaee-api-6.0		
 	<dependency>
 		<groupId>servletapi</groupId>
 		<artifactId>servletapi</artifactId>
 		<version>2.4</version>
 		<scope>provided</scope>
 	</dependency>
-	
+	-->
 	
 		<!-- Begin: Spring Framework and required dependencies -->
 	<dependency>
@@ -154,7 +164,7 @@
 		<version>2.0</version>
 		<configuration>
 		   <webappDirectory>${basedir}/target/${project.artifactId}</webappDirectory>
-		   <warName>connect</warName>
+		   <warName>ROOT</warName>
 		</configuration>
 	  </plugin>		  
 	</plugins>

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TARGET_WEBAPPS_DIR=/catamaran/webapps
+TARGET_WEBAPPS_DIR=/catamaran/tomcat/connectapps
 
 if [ -z $1 ]; then 	# -n tests to see if the argument is non empty
 	echo "Missing target host argument"

@@ -28,27 +28,28 @@
 	
 	<form action="<@spring.url '/persons/save' />" method="post">
 		<@spring.formHiddenInput "person.id" />
-		<div>			
+		<input type="hidden" id="nextCallDate" name="nextCallDate" value="${(person.nextCallDate?date)!}" />
+		<div data-role="fieldcontain">			
 	        <label for="firstName">First Name</label>
 	        <@spring.formInput "person.firstName"/>
 			<@spring.showErrors "<br/>"/>		        
 		</div>
-		<div>			
+		<div data-role="fieldcontain">			
 	        <label for="middleName">Middle Name</label>
 	        <@spring.formInput "person.middleName"/>
 			<@spring.showErrors "<br/>"/>		        
 		</div>
-		<div>			
+		<div data-role="fieldcontain">			
 	        <label for="lastName">Last Name</label>		        
 	        <@spring.formInput "person.lastName"/>
 			<@spring.showErrors "<br/>"/>
 		</div>
-		<div>
-	        <label for="phone">Phone</label>
+		<div data-role="fieldcontain">
+	        <label for="phone1">Phone</label>
 	        <@spring.formInput "person.phone1"/>
 			<@spring.showErrors "<br/>"/>		        
 		</div>
-		<div>
+		<div data-role="fieldcontain">
 	        <label for="email1">Email</label>
 	        <@spring.formInput "person.email1"/>
 			<@spring.showErrors "<br/>"/>		        

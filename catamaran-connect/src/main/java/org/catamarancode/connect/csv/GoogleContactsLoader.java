@@ -6,11 +6,19 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.catamarancode.connect.entity.Person;
+import org.catamarancode.entity.support.NotUniqueResultException;
+import org.catamarancode.entity.support.Persistable;
+import org.catamarancode.entity.support.PersistableUtils;
+import org.hibernate.Criteria;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
+import org.hibernate.context.internal.ThreadLocalSessionContext;
+import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
@@ -225,7 +233,29 @@ public class GoogleContactsLoader {
 					continue;
 				}
 
-				Person existingPerson = (Person) person.locateEntity();
+				// BEGIN duplicate person load logic (note we can't use PersistableBase b/c of stateless session)
+				//Person existingPerson = (Person) person.locateEntity();
+				Person existingPerson = null;								
+				Criteria crit = statelessSession.createCriteria(Person.class);				
+				for (String name : person.naturalKey().keySet()) {
+					Object value = person.naturalKey().get(name);
+					// TODO: Remove restriction to only string
+					if (value != null && value instanceof String) {
+						crit.add(Restrictions.eq(name, value));	
+					}			
+				}
+				List<Person> list = crit.list();
+				if (list.size() > 1) {
+					throw new NotUniqueResultException(
+							String.format(
+									"Not unique result: Query on class %s using %d parameter arguments resulted in %d matches",
+									this.getClass().getName(), person.naturalKey().size(), list.size()));
+				}
+				if (! list.isEmpty()) {
+					existingPerson = list.iterator().next(); 
+				}
+				// END duplicate person load logic
+				
 				if (existingPerson != null) {
 					person.setId(existingPerson.getId());
 					statelessSession.update(person);
@@ -253,7 +283,7 @@ public class GoogleContactsLoader {
 		} catch (Exception e) {
 			String msg = String.format("Error parsing line %d: %s",
 					csv.getCurrentRecord(), e.getMessage());
-			logger.error(msg);
+			logger.error(msg, e);
 		} finally {
 			try {
 				if (in != null) {

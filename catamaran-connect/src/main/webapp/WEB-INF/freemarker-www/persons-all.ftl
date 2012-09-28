@@ -2,11 +2,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
-
-<meta name="viewport" content="width=device-width, initial-scale=1"> 
-<link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.css" />
-<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
-<script src="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.js"></script>
 	
 <head>
 	<#include "includes/head.ftl" />
@@ -16,14 +11,98 @@
 	
 	<div data-role="page">
 		<div data-role="header">
-			<h1>People</h1>
+			<h3>Everyone</h3>
+			<a data-role="button" data-transition="slide" data-direction="reverse" href="<@spring.url '/' />">
+                Home
+            </a>
+		</div>
+		<div data-role="content" style="padding: 15px">
+		
+			<ul data-role="listview" data-inset="true" data-filter="true">
+			<#list persons as person>
+				<li>
+					<a href="<@spring.url '/persons/${person.id?c}' />"  data-transition="slide">
+						${person.displayName!"N/A"}
+					</a>
+				</li>
+			</#list>
+			</ul>
+		
+			<!-- Bottom nav bar -->
+			<div data-role="navbar" data-iconpos="bottom">
+                <ul>
+                    <li>
+                        <a href="<@spring.url '/' />" data-theme="" data-icon="">
+                            Home
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<@spring.url '/persons' />" data-theme="" data-icon="" class="ui-btn-active">
+                            Everyone
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#page1" data-theme="" data-icon="">
+                            Notes
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
 		</div>
 		
-	<ul data-role="listview" data-inset="true" data-filter="true">
-	<#list persons as person>
-		<li><a href="${person.id}">${person.displayName!"N/A"}</a></li>
-	</#list>
-	</ul>
+	</div>
+	
+	
+	<!--
+	FIGURE OUT A WAY TO INCLUDE FIRST LETTER GROUPING LIKE THIS
+	      <div data-role="page" id="page1">
+            <div data-role="content" style="padding: 15px">
+                <ul data-role="listview" data-divider-theme="b" data-inset="true" data-filter="true">
+                    <li data-role="list-divider" role="heading">
+                        A
+                    </li>
+                    <li data-theme="c">
+                        <a href="#page1" data-transition="slide">
+                            Gaute Aas
+                        </a>
+                    </li>
+                    <li data-theme="c">
+                        <a href="#page1" data-transition="slide">
+                            Jonas Aron
+                        </a>
+                    </li>
+                    <li data-role="list-divider" role="heading">
+                        B
+                    </li>
+                    <li data-theme="c">
+                        <a href="#page1" data-transition="slide">
+                            Jim Button
+                        </a>
+                    </li>
+                </ul>
+                <div data-role="navbar" data-iconpos="bottom">
+                    <ul>
+                        <li>
+                            <a href="#page1" data-theme="" data-icon="">
+                                Home
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#page1" data-theme="" data-icon="">
+                                People
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#page1" data-theme="" data-icon="">
+                                Notes
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+       -->
 	
 </div> <!-- bodyContent -->
 </body>
