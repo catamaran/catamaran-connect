@@ -1,6 +1,8 @@
 package org.catamarancode.connect.web;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +45,7 @@ public class MainController {
     @RequestMapping(value = "/index", method = RequestMethod.GET)
     public String index(Map<String,Object> model) {
     	
-    	Person person = new Person();
+    	SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, MMMM d");
     	
     	Set<Criterion> criteria = new HashSet<Criterion>();
     	criteria.add(Restrictions.isNotNull("nextCallDate"));
@@ -58,8 +60,27 @@ public class MainController {
     	logger.debug("Got people: " + list.size());
 		// Save to HttpSession so that we can support previous/next navigation on view screens
 		personListing.reset(list, "Home", "");
+		
+		// Group people by next call date
+		List<String> dateStrList = new ArrayList<String>();
+		Map<String, List<Person>> byDateMap = new HashMap<String, List<Person>>();
+		for (Person person : list) {
+			String dateStr = dateFormat.format(person.getNextCallDate());			
+			if (!dateStrList.contains(dateStr)) {
+				dateStrList.add(dateStr);
+			}
+			
+			List<Person> personsForDateStr = byDateMap.get(dateStr);
+			if (personsForDateStr == null) {
+				personsForDateStr = new ArrayList<Person>();
+				byDateMap.put(dateStr, personsForDateStr);
+			}
+			personsForDateStr.add(person);
+		}
     	
     	model.put("persons", list);
+    	model.put("personsByDate", byDateMap);
+    	model.put("dateGroups", dateStrList);
     	
     	return "index";
     }

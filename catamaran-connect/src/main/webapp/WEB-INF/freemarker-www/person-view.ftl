@@ -36,7 +36,7 @@
 						Next follow up ${person.nextCallDate?datetime?string("MMMM d")}
 					</h3>
 				<#else>
-					<h3>No follow up scheduled</h3>
+					<h3>No follow up date</h3>
 				</#if>			
             
 	            <div class="ui-grid-c">
@@ -84,6 +84,15 @@
 		            </div>
 		            <div class="ui-block-b">
 		            	${person.jobTitle}
+		            </div>
+		            </#if>
+		            
+		            <#if person.company??>
+		            <div class="ui-block-a">
+		            	Company
+		            </div>
+		            <div class="ui-block-b">
+		            	${person.company}
 		            </div>
 		            </#if>
    				
@@ -294,45 +303,65 @@
 		            	${person.type}
 		            </div>
 		            </#if>
+
+					<#if person.spouse??>
+		            <div class="ui-block-a">
+		            	Spouse
+		            </div>
+		            <div class="ui-block-b">
+		            	${person.spouse}
+		            </div>
+		            </#if>
+
+					<#if person.kidNames??>
+		            <div class="ui-block-a">
+		            	Kid Names
+		            </div>
+		            <div class="ui-block-b">
+		            	${person.kidNames}
+		            </div>
+		            </#if>
+
+					<#if person.comments??>
+		            <div class="ui-block-a">
+		            	Comments
+		            </div>
+		            <div class="ui-block-b">
+		            	${person.comments}
+		            </div>
+		            </#if>
 				</div>   					
 			</div>
 	      	
-	            
-            <div class="ui-grid-c">
-	            <div class="ui-block-a">
+			<div data-role="navbar" data-iconpos="bottom">
+				<ul>
+	            <li>
 	            	<#if lastListView.previous??>
 		       		<a data-mini="true" data-role="button" data-inline="true" data-transition="slide" data-direction="reverse" href="<@spring.url '/persons/${lastListView.previous?c}' />">
 		                Prev
 		            </a>
 		            </#if>
-	            </div>
-	            <div class="ui-block-b">
+	            </li>
+	            <li>
 		       	 	<a data-mini="true" data-role="button" data-inline="true" data-transition="fade" href="${person.id?c}/edit">
                 		Edit
             		</a>
-	            </div>
-	            <div class="ui-block-c">
+	            </li>
+	            <li>
 		            <a data-mini="true" data-role="button" data-inline="true" data-transition="slide" href="${person.id?c}/delete">
 	                	Delete
 	            	</a>
-	            </div>
-	            <div class="ui-block-d">
+	            </li>
+	            <li>
 		            <#if lastListView.next??>
 		            <a data-mini="true" data-role="button" dada-icon="arrow-r" data-inline="true" data-transition="slide" href="<@spring.url '/persons/${lastListView.next?c}' />">
 		                Next
 		            </a>
 		            </#if>
-	            </div>
+	            </li>
+	            </ul>
         	</div>
-            
-	        <#--
-			<#list dateAlternativeKeys as alternative>
-				<a data-mini="true" data-role="button" data-inline="true" data-transition="fade" href="<@spring.url '/persons/set-call-date?id=${person.id?c}&nextCallDate=${dateAlternativeValues[alternative]?date}' />">
-                	${alternative}
-            	</a>
-			</#list>
-			-->
-            
+	            
 		</div>
 
 	</div>

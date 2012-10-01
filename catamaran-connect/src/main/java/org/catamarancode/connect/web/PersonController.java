@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,8 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 
 import org.apache.commons.collections.map.ListOrderedMap;
+import org.apache.commons.lang.RandomStringUtils;
+import org.catamarancode.connect.entity.Note;
 import org.catamarancode.connect.entity.Person;
 import org.catamarancode.connect.entity.support.Repository;
 import org.catamarancode.connect.service.IdentifiableListing;
@@ -27,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -149,10 +153,6 @@ public class PersonController {
 	@RequestMapping(value = "/all", method = RequestMethod.GET)
 	public String all(Map<String, Object> model) {
 
-		Person person = new Person();
-		// PersistableBase.setEntityServices(services)
-
-		//List<Person> list = Person.objects.all();
 		Set<Criterion> criteria = new HashSet<Criterion>();
     	criteria.add(Restrictions.eq("deleted", false));
     	
@@ -165,7 +165,29 @@ public class PersonController {
 		// Save to HttpSession so that we can support previous/next navigation on view screens
 		personListing.reset(list, "Everyone", "persons/all");
 		
+		// Put in a map indexed by first letter
+		Map<String, List<Person>> byFirstLetter = new HashMap<String, List<Person>>();
+		List<String> firstLetters = new ArrayList<String>();
+		for (Person person : list) {
+			if (person.getLastName() != null) {
+				String firstLetter = person.getLastName().substring(0, 1).toUpperCase();
+				
+				if (!firstLetters.contains(firstLetter)) {
+					firstLetters.add(firstLetter);
+				}
+				
+				List<Person> personsForThisLetter = byFirstLetter.get(firstLetter);
+				if (personsForThisLetter == null) {
+					personsForThisLetter = new ArrayList<Person>();
+					byFirstLetter.put(firstLetter, personsForThisLetter);
+				}
+				personsForThisLetter.add(person);
+			}			
+		}
+		
 		model.put("persons", list);
+		model.put("personsByFirstLetter", byFirstLetter);
+		model.put("firstLetterList", firstLetters);
 		return "persons-all";
 	}
 	
@@ -200,6 +222,14 @@ public class PersonController {
 			return "person-edit";
 		}
 
+		// Create a new Note if anything was entered
+		if (StringUtils.hasText(person.getEnteredNote())) {
+			Note note = new Note();
+			note.setContact(person);
+			note.setBody(person.getEnteredNote());
+			person.getNotes().add(note);
+		}
+		
 		long id = person.save();
 
 		DisplayMessage.addToThisPage(model, "Saved with id " + id, true);
@@ -214,7 +244,8 @@ public class PersonController {
 		person.setNextCallDate(nextCallDate);
 		person.save();
 		
-		return "redirect:" + personId;
+		
+		return "redirect:../index?rnd=" + RandomStringUtils.randomAlphanumeric(4);
 	}
 
 	/**

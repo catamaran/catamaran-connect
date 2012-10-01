@@ -1,5 +1,6 @@
 package org.catamarancode.connect.entity;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -34,20 +35,15 @@ public class Person extends PersistableBase {
 
 	private static Logger logger = LoggerFactory.getLogger(Person.class);
 
-	/*
-	 * public static EntityFinder objects() { return
-	 * PersistableBase.objects(Person.class); }
-	 */
-
 	private String firstName;
 	private String middleName;
 	private String lastName;
 	private String jobTitle;
 	private String nickname;
-
 	private String shortName;
-
 	private String maidenName;
+	private String spouse;
+	private String kidNames;
 	private Gender gender;
 	private Date birthday;
 	private String occupation;
@@ -68,10 +64,14 @@ public class Person extends PersistableBase {
 	private String website;
 	private String fax3;
 	private ContactType type;
-	private List<Note> notes;
+	private List<Note> notes = new ArrayList<Note>();
 	private String company;
 	private Date nextCallDate;
 	private boolean deleted;
+	private String comments;
+	private String enteredNote;
+	
+	
 	public Date getBirthday() {
 		return birthday;
 	}
@@ -389,6 +389,32 @@ public class Person extends PersistableBase {
 
 	public void setWebsite(String website) {
 		this.website = website;
+	}
+	public String getSpouse() {
+		return spouse;
+	}
+	public void setSpouse(String spouse) {
+		this.spouse = spouse;
+	}
+	public String getKidNames() {
+		return kidNames;
+	}
+	public void setKidNames(String kidNames) {
+		this.kidNames = kidNames;
+	}
+	public String getComments() {
+		return comments;
+	}
+	public void setComments(String comments) {
+		this.comments = comments;
+	}
+	
+	@Transient
+	public String getEnteredNote() {
+		return enteredNote;
+	}
+	public void setEnteredNote(String enteredNote) {
+		this.enteredNote = enteredNote;
 	}
 
 }

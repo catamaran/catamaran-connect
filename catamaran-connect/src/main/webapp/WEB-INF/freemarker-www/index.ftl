@@ -8,41 +8,23 @@
 </head>
 <body>
 	
-	<!--
-	<div data-role="page">
-		<div data-role="header">
-			<h1>People</h1>
-		</div>
-		
-		<ul data-role="listview" data-inset="true" data-filter="true">
-		<#list persons as person>
-			<li><a href="<@spring.url '/persons/${person.id?c}' />">${person.displayName!"N/A"} (${person.nextCallDate})</a></li>
-		</#list>
-		</ul>
-	</div>
-	-->
-	
-        <div data-role="page" id="page1">
-        	<!-- black header at top
-            <div data-theme="a" data-role="header">
-                <h3>
-                    Home
-                </h3>
-            </div>        	
-           -->
+        <div data-role="page" data-url="<@spring.url '/index' />" id="page1">
             <div data-role="content" style="padding: 15px">
                 <ul data-role="listview" data-inset="true">
+				<#list dateGroups as dateGroup> 
+			       <li data-role="list-divider" role="heading">
+	                    ${dateGroup}
+	                </li>
+					<#list personsByDate[dateGroup] as person>
+						<li>
+							<a href="<@spring.url '/persons/${person.id?c}' />"  data-transition="slide">
+								${person.displayName!"N/A"}
+							</a>
+						</li>
+					</#list>                    
+	            </#list>
+				</ul>                	
                 	
-					<#list persons as person>
-					<li>
-						<a href="<@spring.url '/persons/${person.id?c}' />" data-transition="slide">
-							${person.displayName!"N/A"} (${person.nextCallDate?datetime?string("MMM d")})
-						</a>
-					</li>
-					</#list>
-                	
-                </ul>
-                
                 <div data-role="navbar" data-iconpos="top">
                     <ul>
                         <li>
@@ -56,8 +38,8 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#page1" data-theme="" data-icon="">
-                                Notes
+                            <a href="<@spring.url '/persons/create' />" data-theme="" data-icon="plus">
+                                New
                             </a>
                         </li>
                     </ul>

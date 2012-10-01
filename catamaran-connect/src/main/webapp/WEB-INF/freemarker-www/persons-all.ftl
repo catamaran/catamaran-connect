@@ -19,13 +19,18 @@
 		<div data-role="content" style="padding: 15px">
 		
 			<ul data-role="listview" data-inset="true" data-filter="true">
-			<#list persons as person>
-				<li>
-					<a href="<@spring.url '/persons/${person.id?c}' />"  data-transition="slide">
-						${person.displayName!"N/A"}
-					</a>
-				</li>
-			</#list>
+			<#list firstLetterList as firstLetter> 
+		       <li data-role="list-divider" role="heading">
+                    ${firstLetter}
+                </li>
+				<#list personsByFirstLetter[firstLetter] as person>
+					<li>
+						<a href="<@spring.url '/persons/${person.id?c}' />"  data-transition="slide">
+							${person.displayName!"N/A"}
+						</a>
+					</li>
+				</#list>                    
+            </#list>
 			</ul>
 		
 			<!-- Bottom nav bar -->
