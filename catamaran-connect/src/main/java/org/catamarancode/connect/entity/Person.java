@@ -13,6 +13,7 @@ import javax.validation.constraints.Size;
 
 import org.catamarancode.connect.entity.type.ContactType;
 import org.catamarancode.connect.entity.type.Gender;
+import org.catamarancode.connect.entity.type.NoteType;
 import org.catamarancode.connect.entity.type.Priority;
 import org.catamarancode.connect.entity.type.Sensitivity;
 import org.catamarancode.entity.support.EntityFinder;
@@ -69,7 +70,8 @@ public class Person extends PersistableBase {
 	private Date nextCallDate;
 	private boolean deleted;
 	private String comments;
-	private String enteredNote;
+	private String enteredNote;	
+	private NoteType enteredNoteType;
 	
 	
 	public Date getBirthday() {
@@ -415,6 +417,12 @@ public class Person extends PersistableBase {
 	}
 	public void setEnteredNote(String enteredNote) {
 		this.enteredNote = enteredNote;
+	}
+	public NoteType getEnteredNoteType() {
+		return enteredNoteType;
+	}
+	public void setEnteredNoteType(NoteType enteredNoteType) {
+		this.enteredNoteType = enteredNoteType;
 	}
 
 }

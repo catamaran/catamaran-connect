@@ -29,6 +29,45 @@
 			<#if person.email1??>
 				<a data-role="button" href="mailto:${person.displayName} <${person.email1}>">${person.email1}</a>
 			</#if>
+
+			<div data-role="collapsible" data-collapsed="false">			
+				<#if person.notes?has_content??>
+					<h3>
+						<#if (person.notes?size > 1)>
+							${person.notes?size} notes
+						<#else>
+							${person.notes?size} note
+						</#if>
+					</h3>
+				<#else>
+					<h3>No notes</h3>
+				</#if>
+				<form action="<@spring.url '/persons/save-note' />" method="post">
+			        <textarea id="body" name="body"></textarea>				        
+
+					<select id="type" name="type">
+						<#-- TODO: Create options dynamically from NoteType enum -->
+						<option value="">-- Select type --</option>
+						<option value="0">Sent email</option>
+						<option value="1">Call</option>
+						<option value="2">Left message</option>
+						<option value="3">Had meeting</option>
+						<option value="4">Researched</option>
+					</select>
+					<input id="button" name="button" data-inline="true" type="submit" value="Save" />
+				</form>		
+				
+				<#list person.notes as note>
+					<#if (note_index > 0)>
+					<div data-role="collapsible" data-collapsed="true">
+					<#else>
+					<div data-role="collapsible" data-collapsed="false">
+					</#if>
+						<h4>${note.lastModifiedTime}: ${note.type}</h4>
+						<p>${note.body?replace("\n", "<br/>")}</p>
+					</div>
+				</#list>						
+			</div>
 			
 			<div data-role="collapsible" data-collapsed="false">			
 				<#if person.nextCallDate??>

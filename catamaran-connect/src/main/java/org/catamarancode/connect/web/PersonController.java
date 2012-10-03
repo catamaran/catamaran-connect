@@ -18,6 +18,7 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.catamarancode.connect.entity.Note;
 import org.catamarancode.connect.entity.Person;
 import org.catamarancode.connect.entity.support.Repository;
+import org.catamarancode.connect.entity.type.NoteType;
 import org.catamarancode.connect.service.IdentifiableListing;
 import org.catamarancode.connect.web.support.DatePropertyEditor;
 import org.catamarancode.spring.mvc.DisplayMessage;
@@ -62,18 +63,13 @@ public class PersonController {
 		model.put("person", person);
 		return "person-edit";
 	}
-
-	@RequestMapping(value = "/{personId}", method = RequestMethod.GET)
-	public String view(@PathVariable long personId,
-			Map<String, Object> model) {
-		Person person = (Person) Person.objects.load(personId);
-		model.put("person", person);
+	
+	/**
+	 * Generate a list of alternative next call dates for buttons/drop-downs
+	 * @return
+	 */
+	private ListOrderedMap upcomingDates() {
 		
-		// Prev/next
-		personListing.setCurrent(personId);
-		model.put("lastListView", personListing);
-		
-		// Generate a list of alternative next call dates for buttons
 		ListOrderedMap dates = new ListOrderedMap();
 		Calendar cal = new GregorianCalendar();		
 		resetTime(cal);
@@ -98,8 +94,22 @@ public class PersonController {
 		cal.add(Calendar.MONTH, 3);
 		dates.put("In six months", cal.getTime());
 
-		model.put("dateAlternativeValues", dates);
+		return dates;
+	}
+
+	@RequestMapping(value = "/{personId}", method = RequestMethod.GET)
+	public String view(@PathVariable long personId,
+			Map<String, Object> model) {
+		Person person = (Person) Person.objects.load(personId);
+		model.put("person", person);
 		
+		// Prev/next
+		personListing.setCurrent(personId);
+		model.put("lastListView", personListing);
+		
+		// Generate a list of alternative next call dates for buttons
+		ListOrderedMap dates = this.upcomingDates();
+		model.put("dateAlternativeValues", dates);
 		model.put("dateAlternativeKeys", dates.asList());
 		
 		return "person-view";
@@ -227,6 +237,10 @@ public class PersonController {
 			Note note = new Note();
 			note.setContact(person);
 			note.setBody(person.getEnteredNote());
+			Date now = new Date();
+			note.setCreatedTime(now);
+			note.setLastModifiedTime(now);
+			note.setType(person.getEnteredNoteType());
 			person.getNotes().add(note);
 		}
 		
@@ -235,7 +249,31 @@ public class PersonController {
 		DisplayMessage.addToThisPage(model, "Saved with id " + id, true);
 		return "redirect:" + id;
 	}
-	
+
+	@RequestMapping(value = "/save-note", method = RequestMethod.POST)	
+	public String saveNote(@RequestParam("id") long personId, @RequestParam("nextCallDate") Date nextCallDate, @RequestParam("body") String noteBody, @RequestParam("type") NoteType noteType) {
+		
+		Person person = Person.objects.load(personId);
+		if (nextCallDate != null) {
+			// TODO: Figure out how to clear
+			person.setNextCallDate(nextCallDate);	
+		}
+		
+		Note note = new Note();
+		note.setContact(person);
+		note.setBody(noteBody);
+		Date now = new Date();
+		note.setCreatedTime(now);
+		note.setLastModifiedTime(now);
+		note.setType(noteType);
+		person.getNotes().add(note);
+		
+		person.save();
+		
+		
+		return "redirect:../index?rnd=" + RandomStringUtils.randomAlphanumeric(4);
+	}
+
 	@RequestMapping(value = "/set-call-date", method = RequestMethod.GET)	
 	public String setCallDate(@RequestParam("id") long personId, @RequestParam("nextCallDate") Date nextCallDate) {
 	// public String setCallDate(@RequestParam("id") long personId, @RequestParam("nextCallDate") @DateTimeFormat(iso=ISO.DATE) Date nextCallDate) {
