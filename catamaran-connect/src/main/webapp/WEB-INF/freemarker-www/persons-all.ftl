@@ -12,7 +12,7 @@
 	<div data-role="page">
 		<div data-role="header">
 			<h3>Everyone</h3>
-			<a data-role="button" data-transition="slide" data-direction="reverse" href="<@spring.url '/' />">
+			<a data-role="button" data-ajax="false" data-transition="slide" data-direction="reverse" href="<@spring.url '/' />">
                 Home
             </a>
 		</div>
@@ -33,81 +33,30 @@
             </#list>
 			</ul>
 		
-			<!-- Bottom nav bar -->
-			<div data-role="navbar" data-iconpos="bottom">
+			<!-- Bottom nav bar --> 
+			
+			
+			<div data-role="navbar" data-iconpos="top">
                 <ul>
                     <li>
-                        <a href="<@spring.url '/' />" data-theme="" data-icon="">
+                        <a href="<@spring.url '/' />" data-ajax="false" data-theme="" data-icon="home">
                             Home
                         </a>
                     </li>
                     <li>
-                        <a href="<@spring.url '/persons' />" data-theme="" data-icon="" class="ui-btn-active">
+                        <a href="<@spring.url '/persons' />" data-theme="" data-icon="grid" class="ui-btn-active">
                             Everyone
                         </a>
                     </li>
                     <li>
-                        <a href="#page1" data-theme="" data-icon="">
-                            Notes
+                        <a href="<@spring.url '/persons/create' />" data-theme="" data-icon="plus">
+                            New
                         </a>
                     </li>
                 </ul>
             </div>
-            
-		</div>
-		
+		</div>		
 	</div>
-	
-	
-	<!--
-	FIGURE OUT A WAY TO INCLUDE FIRST LETTER GROUPING LIKE THIS
-	      <div data-role="page" id="page1">
-            <div data-role="content" style="padding: 15px">
-                <ul data-role="listview" data-divider-theme="b" data-inset="true" data-filter="true">
-                    <li data-role="list-divider" role="heading">
-                        A
-                    </li>
-                    <li data-theme="c">
-                        <a href="#page1" data-transition="slide">
-                            Gaute Aas
-                        </a>
-                    </li>
-                    <li data-theme="c">
-                        <a href="#page1" data-transition="slide">
-                            Jonas Aron
-                        </a>
-                    </li>
-                    <li data-role="list-divider" role="heading">
-                        B
-                    </li>
-                    <li data-theme="c">
-                        <a href="#page1" data-transition="slide">
-                            Jim Button
-                        </a>
-                    </li>
-                </ul>
-                <div data-role="navbar" data-iconpos="bottom">
-                    <ul>
-                        <li>
-                            <a href="#page1" data-theme="" data-icon="">
-                                Home
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#page1" data-theme="" data-icon="">
-                                People
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#page1" data-theme="" data-icon="">
-                                Notes
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-       -->
 	
 </div> <!-- bodyContent -->
 </body>

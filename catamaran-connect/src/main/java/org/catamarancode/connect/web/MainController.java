@@ -11,8 +11,12 @@ import java.util.Set;
 import javax.annotation.Resource;
 
 import org.catamarancode.connect.entity.Person;
+import org.catamarancode.connect.entity.User;
 import org.catamarancode.connect.entity.support.Repository;
 import org.catamarancode.connect.service.IdentifiableListing;
+import org.catamarancode.connect.service.MessageContext;
+import org.catamarancode.connect.service.UserContext;
+import org.catamarancode.util.CollectionUtils;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
@@ -23,6 +27,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 @Controller
@@ -36,20 +41,65 @@ public class MainController {
     
     @Autowired
 	private IdentifiableListing personListing;
+    
+	@Autowired
+	private UserContext userContext;
+	
+	@Autowired
+	private MessageContext messageContext;
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String slash(Map<String,Object> model) {
     	return index(model);
     }
+
+	@RequestMapping(value = "/login", method = RequestMethod.GET)	
+	public String logInGet(Map<String,Object> model) {
+		messageContext.addPendingToModel(model);
+		return "login";
+	}
+    
+	@RequestMapping(value = "/login", method = RequestMethod.POST)	
+	public String logInPost(Map<String,Object> model, @RequestParam("email") String email, @RequestParam("password") String password) {
+
+		List<User> users = User.objects.filter(Restrictions.eq("email", email));
+		// TODO: Use generics for this util method
+		User user = (User) CollectionUtils.findOne(users);
+		if (user == null) {
+			MessageContext.addToModel(model, "Invalid email", false);
+			return "login";
+		}
+		if (!user.passwordMatches(password)) {
+			MessageContext.addToModel(model, "Invalid email or password", false);
+			return "login";
+		}
+		
+		// Success
+		userContext.setUserId(user.getId());
+		return "redirect:/index";
+	}
+	
+	@RequestMapping(value = "/logout", method = RequestMethod.GET)	
+	public String logOut(Map<String,Object> model) {
+
+		userContext.setUserId(null);
+		return "redirect:/login";
+	}
     
     @RequestMapping(value = "/index", method = RequestMethod.GET)
     public String index(Map<String,Object> model) {
+    	
+    	if (!userContext.isLoggedIn()) {
+    		return "redirect:/login";
+    	}
+    	userContext.prepareModel(model);
     	
     	SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, MMMM d");
     	
     	Set<Criterion> criteria = new HashSet<Criterion>();
     	criteria.add(Restrictions.isNotNull("nextCallDate"));
     	criteria.add(Restrictions.eq("deleted", false));
+    	criteria.add(Restrictions.eq("user", userContext.getUser()));
     	
     	List<Order> orders = new ArrayList<Order>();
 		orders.add(Order.asc("nextCallDate"));

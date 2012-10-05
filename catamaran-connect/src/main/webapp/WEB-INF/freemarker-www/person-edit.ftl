@@ -10,36 +10,48 @@
 
 <div data-role="page" >
 	<div data-role="header">
-		<h3>New Contact</h3>
-		<a data-role="button" data-transition="slide" data-direction="reverse" href="<@spring.url '/' />" >
-            Home
+		<#if (person.id > 0)>
+		<h3>Edit ${person.displayName}</h3>
+		<a data-role="button" data-transition="slide" data-direction="reverse" href="<@spring.url '/persons/${person.id?c}' />" >
+            Back
         </a>
+		<#else>
+		<h3>New Contact</h3>
+		<a data-role="button" data-ajax="false" data-transition="slide" data-direction="reverse" href="<@spring.url '/' />">
+            Cancel
+        </a>		
+		</#if>
 	</div>
 	
 	<div data-role="content" style="padding: 15px">	
 		
+		<#if person??>
+			<@spring.bind "person" />
+		</#if>		
 		<#if spring.status??>	
-			<!-- see http://code.google.com/p/itime-all/source/browse/trunk/inspector-time/src/main/webapp/WEB-INF/freemarker/www/inspector-time-macros.ftl -->
-			<!-- see http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/support/BindStatus.html -->
-			<!-- see http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/validation/Errors.html -->
-			<p>errors</p>
-			<#-- list spring.status.errorMessages as error> <b>${error}</b> <br> </#list -->
-			<#if person??>
-				<@spring.bind "person" />
-			</#if>		
+			<#-- see http://code.google.com/p/itime-all/source/browse/trunk/inspector-time/src/main/webapp/WEB-INF/freemarker/www/inspector-time-macros.ftl -->
+			<#-- see http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/support/BindStatus.html -->
+			<#-- see http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/validation/Errors.html -->
+			<div ui-shadow="b" class="errorBox">
+			<#list spring.status.errorMessages as error> 
+				<strong><em>${error}</em></strong> <br>
+			</#list>
 			<#list spring.status.errors.fieldErrors as fieldError>
-		            Field ${fieldError.field}: <@spring.message fieldError /><br/>
+		            <strong><em>Field ${fieldError.field}: <@spring.message fieldError /></em></strong><br/>
 		        </#list>
-		        <#list spring.status.errors.globalErrors as error>
-		            <@spring.message error /><br/>
-		        </#list>
+		    <#list spring.status.errors.globalErrors as error>
+		    	<strong><em><@spring.message error /></em></strong><br/>
+		    </#list>
+		    </div>
 		</#if>		
 		
 		<!-- for help: http://mobile.tutsplus.com/tutorials/mobile-web-apps/jquery-mobile-forms/ -->
 		<form action="<@spring.url '/persons/save' />" method="post">
-			<input type="hidden" id="nextCallDate" name="nextCallDate" value="${(person.nextCallDate?date)!}" />
 			<#if person.id??>
 				<@spring.formHiddenInput "person.id" />
+			</#if>
+			<#if (person.user)??>
+				<input type="hidden" name="personUserId" id="personUserId" value="${person.user.id?c}" />
 			</#if>
 			
 			<div data-role="fieldcontain">	
@@ -134,22 +146,67 @@
 			        <@spring.formInput "person.kidNames"/>
 				</div>	
 				
+				<div data-role="fieldcontain">
+			        <label for="linkedInProfile">LinkedIn Profile</label>
+			        <@spring.formInput "person.linkedInProfile"/>
+				</div>	
+				
+				<div data-role="fieldcontain">
+			        <label for="twitterHandle">Twitter Handle</label>
+			        <@spring.formInput "person.twitterHandle"/>
+				</div>	
+				
+				<div data-role="fieldcontain">
+			        <label for="comments">Comments</label>
+			        <@spring.formTextarea "person.comments"/>
+				</div>	
+				
 			</div>	
 			
-			<div data-role="fieldcontain">
-		        <label for="comments">Comments</label>
-		        <@spring.formTextarea "person.comments"/>
-			</div>	
+			<!-- next call date -->
+			<input type="hidden" name="existingNextCallDate" id="existingNextCallDate" value="${(person.nextCallDate?date?string("MMM d, yyyy"))!}" />
+			
+			<@spring.bind "person.nextCallDate" />
+			<fieldset data-role="controlgroup" >
+				<#if person.nextCallDate??>
+				<legend>Follow up on <em>${person.nextCallDate?datetime?string("MMMM d")}</em> or:</legend>
+				<#else>
+				<legend>Follow up <em>never</em> or in:</legend>
+				</#if>
 
-			<div data-role="fieldcontain">
-		        <label for="comments">Note</label>
-		        <@spring.formTextarea "person.enteredNote"/>
-			</div>
-			
+				<input type="radio" name="nextCallDate" id="radio-choice-0" value="Jan 1, 1970" />
+		     	<label for="radio-choice-0">Never</label>
+		     	
+				<#assign alternative="Tomorrow"/>
+		     	<input type="radio" name="nextCallDate" id="radio-choice-1" value="${dateAlternativeValues[alternative]?date}" />
+		     	<label for="radio-choice-1">In a day</label>
+		
+				<#assign alternative="Next week"/>
+		     	<input type="radio" name="nextCallDate" id="radio-choice-2" value="${dateAlternativeValues[alternative]?date}" />
+		     	<label for="radio-choice-2">In a week</label>
+
+				<#assign alternative="In one month"/>
+		     	<input type="radio" name="nextCallDate" id="radio-choice-3" value="${dateAlternativeValues[alternative]?date}" />
+		     	<label for="radio-choice-3">In a month</label>
+
+				<#assign alternative="In three months"/>
+		     	<input type="radio" name="nextCallDate" id="radio-choice-4" value="${dateAlternativeValues[alternative]?date}" />
+		     	<label for="radio-choice-4">In three months</label>					
+			</fieldset>					
+
 			<div>
 				<label for="button"></label>
 				<input type="submit" value="Save" />
-			</div>		
+			</div>	
+			
+			<#if (person.id > 0)>
+			<div>			
+	            <a data-role="button" data-rel="dialog" href="../${person.id?c}/delete-confirm">
+                	Delete
+            	</a>
+            </div>
+            </#if>
+				
 		</form>
 	</div> <!-- content -->
 		

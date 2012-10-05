@@ -12,50 +12,26 @@
 		<div data-role="header">
 			<h3>${person.displayName}</h3>
 			<#if (lastListView.path)??>
-			<a data-role="button" data-transition="slide" data-direction="reverse" href="<@spring.url '/${lastListView.path}' />" >
+			<a data-role="button" data-ajax="false" data-transition="slide" data-direction="reverse" href="<@spring.url '/${lastListView.path}' />" >
                 ${lastListView.pathName}
             </a>
             </#if>
 		</div>
 		<div data-role="content" style="padding: 15px">
 		
+			<#if person.email1??>
+				<a data-role="button" data-theme="c" href="mailto:${person.displayName} <${person.email1}>">${person.email1}</a>
+			</#if>
+
 			<#if person.phone1??>
-				<a data-role="button" href="tel:${person.phone1}">${person.phone1}</a>
+				<a data-role="button" data-theme="c" href="tel:${person.phone1}">${person.phone1}</a>
 			</#if>
 			<#if person.phone2??>
-				<a data-role="button" href="tel:${person.phone2}">${person.phone2}</a>
+				<a data-role="button" data-theme="c" href="tel:${person.phone2}">${person.phone2}</a>
 			</#if>			
 
-			<#if person.email1??>
-				<a data-role="button" href="mailto:${person.displayName} <${person.email1}>">${person.email1}</a>
-			</#if>
-
-			<div data-role="collapsible" data-collapsed="false">			
-				<#if person.notes?has_content??>
-					<h3>
-						<#if (person.notes?size > 1)>
-							${person.notes?size} notes
-						<#else>
-							${person.notes?size} note
-						</#if>
-					</h3>
-				<#else>
-					<h3>No notes</h3>
-				</#if>
-				<form action="<@spring.url '/persons/save-note' />" method="post">
-			        <textarea id="body" name="body"></textarea>				        
-
-					<select id="type" name="type">
-						<#-- TODO: Create options dynamically from NoteType enum -->
-						<option value="">-- Select type --</option>
-						<option value="0">Sent email</option>
-						<option value="1">Call</option>
-						<option value="2">Left message</option>
-						<option value="3">Had meeting</option>
-						<option value="4">Researched</option>
-					</select>
-					<input id="button" name="button" data-inline="true" type="submit" value="Save" />
-				</form>		
+			<div data-role="collapsible" data-theme="b" data-collapsed="false">	
+				<h3>Notes (${person.notes?size}) </h3>
 				
 				<#list person.notes as note>
 					<#if (note_index > 0)>
@@ -63,50 +39,55 @@
 					<#else>
 					<div data-role="collapsible" data-collapsed="false">
 					</#if>
-						<h4>${note.lastModifiedTime}: ${note.type}</h4>
-						<p>${note.body?replace("\n", "<br/>")}</p>
+						<h4>${note.lastModifiedTime?date?string("MMMM d, yyyy")}</h4>
+						<div>${note.body?replace("\n", "<br/>")}</div>
 					</div>
-				</#list>						
+				</#list>
+				
+				<div data-role="collapsible">
+					<h3>Enter new note</h3>
+					<form action="<@spring.url '/persons/save-note' />" method="post">
+						<input type="hidden" name="id" id="id" value="${person.id?c}" />
+						
+						<!-- new note text -->
+						<div data-role="fieldcontain">			
+					        <textarea id="body" name="body"></textarea>		        
+						</div>
+	
+						<!-- next call date -->
+						<fieldset data-role="controlgroup" >
+							<#if person.nextCallDate??>
+							<legend>Follow up on <em>${person.nextCallDate?datetime?string("MMMM d")}</em> or:</legend>
+							<#else>
+							<legend>Follow up <em>never</em> or in:</legend>
+							</#if>
+	
+							<input type="radio" name="nextCallDate" id="radio-choice-0" value="Jan 1, 1970" />
+					     	<label for="radio-choice-0">Never</label>
+					     	
+							<#assign alternative="Tomorrow"/>
+					     	<input type="radio" name="nextCallDate" id="radio-choice-1" value="${dateAlternativeValues[alternative]?date}" />
+					     	<label for="radio-choice-1">In a day</label>
+					
+							<#assign alternative="Next week"/>
+					     	<input type="radio" name="nextCallDate" id="radio-choice-2" value="${dateAlternativeValues[alternative]?date}" />
+					     	<label for="radio-choice-2">In a week</label>
+		
+							<#assign alternative="In one month"/>
+					     	<input type="radio" name="nextCallDate" id="radio-choice-3" value="${dateAlternativeValues[alternative]?date}" />
+					     	<label for="radio-choice-3">In a month</label>
+		
+							<#assign alternative="In three months"/>
+					     	<input type="radio" name="nextCallDate" id="radio-choice-4" value="${dateAlternativeValues[alternative]?date}" />
+					     	<label for="radio-choice-4">In three months</label>					
+						</fieldset>		
+	
+						<input id="button" data-theme="a" name="button" type="submit" value="Save" />
+					</form>
+				</div>		
 			</div>
-			
-			<div data-role="collapsible" data-collapsed="false">			
-				<#if person.nextCallDate??>
-					<h3>
-						Next follow up ${person.nextCallDate?datetime?string("MMMM d")}
-					</h3>
-				<#else>
-					<h3>No follow up date</h3>
-				</#if>			
-            
-	            <div class="ui-grid-c">
-		            <div class="ui-block-a">
-		            	<#assign alternative="Tomorrow"/>
-						<a data-mini="true" data-role="button" data-inline="true" data-transition="fade" href="<@spring.url '/persons/set-call-date?id=${person.id?c}&nextCallDate=${dateAlternativeValues[alternative]?date}' />">
-		                	Day
-		            	</a>
-		            </div>
-		            <div class="ui-block-b">
-		            	<#assign alternative="Next week"/>
-						<a data-mini="true" data-role="button" data-inline="true" data-transition="fade" href="<@spring.url '/persons/set-call-date?id=${person.id?c}&nextCallDate=${dateAlternativeValues[alternative]?date}' />">
-		                	Week 
-		            	</a>
-		            </div>
-		            <div class="ui-block-c">
-		            	<#assign alternative="In one month"/>
-						<a data-mini="true" data-role="button" data-inline="true" data-transition="fade" href="<@spring.url '/persons/set-call-date?id=${person.id?c}&nextCallDate=${dateAlternativeValues[alternative]?date}' />">
-		                	Month
-		            	</a>
-		            </div>
-		            <div class="ui-block-d">
-		            	<#assign alternative="In three months"/>
-						<a data-mini="true" data-role="button" data-inline="true" data-transition="fade" href="<@spring.url '/persons/set-call-date?id=${person.id?c}&nextCallDate=${dateAlternativeValues[alternative]?date}' />">
-		                	3 Mon
-		            	</a>
-		            </div>
-		      	</div>
-		    </div>
 	      	
-			<div data-role="collapsible">
+			<div data-role="collapsible" data-theme="b" >
    				<h3>Details</h3>
    				<div class="ui-grid-a">
 
@@ -361,6 +342,24 @@
 		            </div>
 		            </#if>
 
+					<#if person.linkedInProfile??>
+		            <div class="ui-block-a">
+		            	LinkedIn Profile
+		            </div>
+		            <div class="ui-block-b">
+		            	${person.linkedInProfile}
+		            </div>
+		            </#if>
+
+					<#if person.twitterHandle??>
+		            <div class="ui-block-a">
+		            	Twitter Handle
+		            </div>
+		            <div class="ui-block-b">
+		            	${person.twitterHandle}
+		            </div>
+		            </#if>
+
 					<#if person.comments??>
 		            <div class="ui-block-a">
 		            	Comments
@@ -379,6 +378,10 @@
 		       		<a data-mini="true" data-role="button" data-inline="true" data-transition="slide" data-direction="reverse" href="<@spring.url '/persons/${lastListView.previous?c}' />">
 		                Prev
 		            </a>
+		            <#else>
+	            	<a data-mini="true" data-role="button" data-inline="true" data-transition="slide" data-direction="reverse" href="#">
+	                	&nbsp;
+	            	</a>
 		            </#if>
 	            </li>
 	            <li>
@@ -387,15 +390,14 @@
             		</a>
 	            </li>
 	            <li>
-		            <a data-mini="true" data-role="button" data-inline="true" data-transition="slide" href="${person.id?c}/delete">
-	                	Delete
-	            	</a>
-	            </li>
-	            <li>
 		            <#if lastListView.next??>
 		            <a data-mini="true" data-role="button" dada-icon="arrow-r" data-inline="true" data-transition="slide" href="<@spring.url '/persons/${lastListView.next?c}' />">
 		                Next
 		            </a>
+		            <#else>
+		            <a data-mini="true" data-role="button" data-inline="true" data-transition="slide" data-direction="reverse" href="#">
+	                	&nbsp;
+	            	</a>
 		            </#if>
 	            </li>
 	            </ul>

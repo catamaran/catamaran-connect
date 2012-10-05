@@ -6,6 +6,8 @@ import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import javax.validation.constraints.Pattern;
@@ -13,7 +15,6 @@ import javax.validation.constraints.Size;
 
 import org.catamarancode.connect.entity.type.ContactType;
 import org.catamarancode.connect.entity.type.Gender;
-import org.catamarancode.connect.entity.type.NoteType;
 import org.catamarancode.connect.entity.type.Priority;
 import org.catamarancode.connect.entity.type.Sensitivity;
 import org.catamarancode.entity.support.EntityFinder;
@@ -24,6 +25,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
+/**
+ * Export: select * from Person INTO OUTFILE '/tmp/person.txt' fields enclosed by '"';
+ * Import: load data infile '/tmp/person.txt' into table Person fields enclosed by '"';
+ * @author mkvalsvik
+ *
+ */
 @Entity
 public class Person extends PersistableBase {
 
@@ -70,9 +77,19 @@ public class Person extends PersistableBase {
 	private Date nextCallDate;
 	private boolean deleted;
 	private String comments;
-	private String enteredNote;	
-	private NoteType enteredNoteType;
+	private String linkedInProfile;
+	private String twitterHandle;
+	private User user;
 	
+	@ManyToOne(cascade = { CascadeType.ALL }, optional=false)
+	@JoinColumn(name="user_id", nullable=false)
+    public User getUser() {
+        return user;
+    }
+	
+	public void setUser(User user) {
+		this.user = user;
+	}
 	
 	public Date getBirthday() {
 		return birthday;
@@ -209,6 +226,7 @@ public class Person extends PersistableBase {
 	}
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "contact")
+	@javax.persistence.OrderBy("lastModifiedTime DESC")
 	public List<Note> getNotes() {
 		return notes;
 	}
@@ -217,22 +235,22 @@ public class Person extends PersistableBase {
 		return occupation;
 	}
 
-	@Pattern(regexp = "^(?:(?:\\+?1\\s*(?:[.-]\\s*)?)?(?:\\(\\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\\s*\\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\\s*(?:[.-]\\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\\s*(?:[.-]\\s*)?([0-9]{4})(?:\\s*(?:#|x\\.?|ext\\.?|extension)\\s*(\\d+))?$", message = "Use format xxx-xxx-xxxx")
+	@Pattern(regexp = "^(?:(?:\\+?1\\s*(?:[.-]\\s*)?)?(?:\\(\\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\\s*\\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\\s*(?:[.-]\\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\\s*(?:[.-]\\s*)?([0-9]{4})(?:\\s*(?:#|x\\.?|ext\\.?|extension)\\s*(\\d+))?$", message = "Use format xxx-xxx-xxxx starting with 2 or higher starting with 2 or higher")
 	public String getPhone1() {
 		return phone1;
 	}
 
-	@Pattern(regexp = "^(?:(?:\\+?1\\s*(?:[.-]\\s*)?)?(?:\\(\\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\\s*\\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\\s*(?:[.-]\\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\\s*(?:[.-]\\s*)?([0-9]{4})(?:\\s*(?:#|x\\.?|ext\\.?|extension)\\s*(\\d+))?$", message = "Use format xxx-xxx-xxxx")
+	@Pattern(regexp = "^(?:(?:\\+?1\\s*(?:[.-]\\s*)?)?(?:\\(\\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\\s*\\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\\s*(?:[.-]\\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\\s*(?:[.-]\\s*)?([0-9]{4})(?:\\s*(?:#|x\\.?|ext\\.?|extension)\\s*(\\d+))?$", message = "Use format xxx-xxx-xxxx starting with 2 or higher starting with 2 or higher")
 	public String getPhone2() {
 		return phone2;
 	}
 
-	@Pattern(regexp = "^(?:(?:\\+?1\\s*(?:[.-]\\s*)?)?(?:\\(\\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\\s*\\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\\s*(?:[.-]\\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\\s*(?:[.-]\\s*)?([0-9]{4})(?:\\s*(?:#|x\\.?|ext\\.?|extension)\\s*(\\d+))?$", message = "Use format xxx-xxx-xxxx")
+	@Pattern(regexp = "^(?:(?:\\+?1\\s*(?:[.-]\\s*)?)?(?:\\(\\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\\s*\\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\\s*(?:[.-]\\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\\s*(?:[.-]\\s*)?([0-9]{4})(?:\\s*(?:#|x\\.?|ext\\.?|extension)\\s*(\\d+))?$", message = "Use format xxx-xxx-xxxx starting with 2 or higher starting with 2 or higher")
 	public String getPhone3() {
 		return phone3;
 	}
 
-	@Pattern(regexp = "^(?:(?:\\+?1\\s*(?:[.-]\\s*)?)?(?:\\(\\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\\s*\\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\\s*(?:[.-]\\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\\s*(?:[.-]\\s*)?([0-9]{4})(?:\\s*(?:#|x\\.?|ext\\.?|extension)\\s*(\\d+))?$", message = "Use format xxx-xxx-xxxx")
+	@Pattern(regexp = "^(?:(?:\\+?1\\s*(?:[.-]\\s*)?)?(?:\\(\\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\\s*\\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\\s*(?:[.-]\\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\\s*(?:[.-]\\s*)?([0-9]{4})(?:\\s*(?:#|x\\.?|ext\\.?|extension)\\s*(\\d+))?$", message = "Use format xxx-xxx-xxxx starting with 2 or higher starting with 2 or higher")
 	public String getPhone4() {
 		return phone4;
 	}
@@ -410,19 +428,17 @@ public class Person extends PersistableBase {
 	public void setComments(String comments) {
 		this.comments = comments;
 	}
+	public String getLinkedInProfile() {
+		return linkedInProfile;
+	}
+	public void setLinkedInProfile(String linkedInProfile) {
+		this.linkedInProfile = linkedInProfile;
+	}
+	public String getTwitterHandle() {
+		return twitterHandle;
+	}
+	public void setTwitterHandle(String twitterHandle) {
+		this.twitterHandle = twitterHandle;
+	}
 	
-	@Transient
-	public String getEnteredNote() {
-		return enteredNote;
-	}
-	public void setEnteredNote(String enteredNote) {
-		this.enteredNote = enteredNote;
-	}
-	public NoteType getEnteredNoteType() {
-		return enteredNoteType;
-	}
-	public void setEnteredNoteType(NoteType enteredNoteType) {
-		this.enteredNoteType = enteredNoteType;
-	}
-
 }

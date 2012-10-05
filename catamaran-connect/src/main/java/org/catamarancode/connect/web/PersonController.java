@@ -17,9 +17,10 @@ import org.apache.commons.collections.map.ListOrderedMap;
 import org.apache.commons.lang.RandomStringUtils;
 import org.catamarancode.connect.entity.Note;
 import org.catamarancode.connect.entity.Person;
+import org.catamarancode.connect.entity.User;
 import org.catamarancode.connect.entity.support.Repository;
-import org.catamarancode.connect.entity.type.NoteType;
 import org.catamarancode.connect.service.IdentifiableListing;
+import org.catamarancode.connect.service.UserContext;
 import org.catamarancode.connect.web.support.DatePropertyEditor;
 import org.catamarancode.spring.mvc.DisplayMessage;
 import org.hibernate.criterion.Criterion;
@@ -33,6 +34,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -54,6 +56,9 @@ public class PersonController {
 	@Autowired
 	private IdentifiableListing personListing;
 	
+	@Autowired
+	private UserContext userContext;	
+	
 	@Resource
 	private Repository repository;
 
@@ -61,6 +66,12 @@ public class PersonController {
 	public String create(Map<String, Object> model) {
 		Person person = new Person();
 		model.put("person", person);
+		
+		// Generate a list of alternative next call dates for buttons
+		ListOrderedMap dates = this.upcomingDates();
+		model.put("dateAlternativeValues", dates);
+		model.put("dateAlternativeKeys", dates.asList());
+		
 		return "person-edit";
 	}
 	
@@ -128,6 +139,12 @@ public class PersonController {
 			Map<String, Object> model) {
 		Person person = (Person) Person.objects.load(personId);
 		model.put("person", person);
+		
+		// Generate a list of alternative next call dates for buttons
+		ListOrderedMap dates = this.upcomingDates();
+		model.put("dateAlternativeValues", dates);
+		model.put("dateAlternativeKeys", dates.asList());
+		
 		return "person-edit";
 	}
 	
@@ -150,6 +167,14 @@ public class PersonController {
 		return "redirect:/persons/" + nextId.toString();
 	}
 	
+	@RequestMapping(value = "/{personId}/delete-confirm", method = RequestMethod.GET)
+	public String deleteConfirm(@PathVariable long personId,
+			Map<String, Object> model) {
+		Person person = (Person) Person.objects.load(personId);
+		model.put("person", person);
+		return "person-delete-confirm";
+	}	
+	
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public String root(Map<String, Object> model) {
 		return all(model);
@@ -165,6 +190,7 @@ public class PersonController {
 
 		Set<Criterion> criteria = new HashSet<Criterion>();
     	criteria.add(Restrictions.eq("deleted", false));
+    	criteria.add(Restrictions.eq("user", userContext.getUser()));
     	
 		List<Order> orders = new ArrayList<Order>();
 		orders.add(Order.asc("lastName").ignoreCase());
@@ -225,23 +251,40 @@ public class PersonController {
 	 * @return
 	 */
 	@RequestMapping(value = "/save", method = RequestMethod.POST)
-	public String save(@ModelAttribute("person") @Valid Person person,
+	public String save(@ModelAttribute("person") @Valid Person person, @RequestParam(value="personUserId", required=false) Long personUserId, @RequestParam(value="existingNextCallDate", required=false) Date existingNextCallDate,
 			BindingResult errors, Map<String, Object> model) {
 
 		if (errors.hasErrors()) {
+			
+			// Log them
+			for (ObjectError error : errors.getAllErrors()) {
+				logger.info("form error: " + error.getDefaultMessage());
+			}
+
+			// Generate a list of alternative next call dates for buttons
+			ListOrderedMap dates = this.upcomingDates();
+			model.put("dateAlternativeValues", dates);
+			model.put("dateAlternativeKeys", dates.asList());			
 			return "person-edit";
 		}
-
-		// Create a new Note if anything was entered
-		if (StringUtils.hasText(person.getEnteredNote())) {
-			Note note = new Note();
-			note.setContact(person);
-			note.setBody(person.getEnteredNote());
-			Date now = new Date();
-			note.setCreatedTime(now);
-			note.setLastModifiedTime(now);
-			note.setType(person.getEnteredNoteType());
-			person.getNotes().add(note);
+		
+		if (isNever(person.getNextCallDate())) {
+			person.setNextCallDate(null);
+		} else if (person.getNextCallDate() == null && existingNextCallDate != null) {
+			
+			// User did not change it
+			person.setNextCallDate(existingNextCallDate);
+		}
+		
+		if (person.getId() == null || person.getId().longValue() == 0) {
+			
+			// Create
+			person.setUser(userContext.getUser());
+		} else {
+			
+			// Update -- re-associate person object with a user because the spring form binding will have removed user
+			User alreadyAssociatedUser = User.objects.load(personUserId);
+			person.setUser(alreadyAssociatedUser);
 		}
 		
 		long id = person.save();
@@ -249,29 +292,54 @@ public class PersonController {
 		DisplayMessage.addToThisPage(model, "Saved with id " + id, true);
 		return "redirect:" + id;
 	}
-
-	@RequestMapping(value = "/save-note", method = RequestMethod.POST)	
-	public String saveNote(@RequestParam("id") long personId, @RequestParam("nextCallDate") Date nextCallDate, @RequestParam("body") String noteBody, @RequestParam("type") NoteType noteType) {
+	
+	private boolean isNever(Date date) {
+		if (date == null) {
+			return false;
+		}
+	
+		Calendar epochTestYear = new GregorianCalendar();
+		epochTestYear.set(Calendar.YEAR, 1971);
 		
-		Person person = Person.objects.load(personId);
-		if (nextCallDate != null) {
-			// TODO: Figure out how to clear
-			person.setNextCallDate(nextCallDate);	
+		if (date.before(epochTestYear.getTime())) {
+			return true;
 		}
 		
-		Note note = new Note();
-		note.setContact(person);
-		note.setBody(noteBody);
-		Date now = new Date();
-		note.setCreatedTime(now);
-		note.setLastModifiedTime(now);
-		note.setType(noteType);
-		person.getNotes().add(note);
+		return false;
+	}
+
+	@RequestMapping(value = "/save-note", method = RequestMethod.POST)	
+	public String saveNote(@RequestParam("id") long personId, @RequestParam(value="nextCallDate", required=false) Date nextCallDate, @RequestParam("body") String noteBody) {
 		
-		person.save();
+		Person person = Person.objects.load(personId);
+		boolean changed = false;
+		if (nextCallDate != null) {
+			if (isNever(nextCallDate)) {
+				person.setNextCallDate(null);
+			} else {
+				person.setNextCallDate(nextCallDate);
+			}
+			changed = true;
+		}
 		
+		if (StringUtils.hasText(noteBody)) {
+			Note note = new Note();
+			note.setContact(person);
+			note.setBody(noteBody);
+			Date now = new Date();
+			note.setCreatedTime(now);
+			note.setLastModifiedTime(now);
+			note.setSubject("Entered note");
+			person.getNotes().add(note);
+			changed = true;
+		}
 		
-		return "redirect:../index?rnd=" + RandomStringUtils.randomAlphanumeric(4);
+		if (changed) {
+			person.save();
+		}
+		
+		return "redirect:" + personId;
+		//return "redirect:../index?rnd=" + RandomStringUtils.randomAlphanumeric(4);
 	}
 
 	@RequestMapping(value = "/set-call-date", method = RequestMethod.GET)	

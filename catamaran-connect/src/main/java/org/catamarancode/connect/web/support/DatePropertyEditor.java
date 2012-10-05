@@ -36,7 +36,11 @@ public class DatePropertyEditor extends PropertyEditorSupport {
     }
 
     public String getAsText() {
-        return new SimpleDateFormat(format).format((Date) getValue());
+    	Date date = (Date) getValue();
+    	if (date != null) {
+    		return new SimpleDateFormat(format).format(date);
+    	}
+    	return "";
     }     
 
 }

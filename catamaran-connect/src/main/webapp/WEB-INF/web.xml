@@ -5,6 +5,9 @@
 <web-app>
   <display-name>Archetype Created Web Application</display-name>
   
+  <!-- Ensure that session data can be serialized,  see http://wiki.metawerx.net/wiki/Web.xml.Distributable -->
+  <distributable />
+  
   <!-- Keep web sessions alive until browser is closed. -->
   <session-config>
     <session-timeout>0</session-timeout>

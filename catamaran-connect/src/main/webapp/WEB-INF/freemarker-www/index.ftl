@@ -9,7 +9,20 @@
 <body>
 	
         <div data-role="page" data-url="<@spring.url '/index' />" id="page1">
+		        
+			<div data-role="header">				
+				<h3>Home</h3>
+				<a data-role="button" class="ui-btn-right" data-transition="fade" href="<@spring.url '/logout' />" >
+		            Log out ${user.firstName}
+		        </a>
+			</div>
+	        
             <div data-role="content" style="padding: 15px">
+            	
+            	<#if !(dateGroups?has_content)>
+            		No contacts, <a href="<@spring.url '/persons/create' />">add a new one</a> now!
+            	</#if>
+            	
                 <ul data-role="listview" data-inset="true">
 				<#list dateGroups as dateGroup> 
 			       <li data-role="list-divider" role="heading">
@@ -46,8 +59,6 @@
                 </div>
             </div>
         </div>
-	
-		
 	
 </body>
 </html>

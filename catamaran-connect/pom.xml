@@ -22,7 +22,7 @@
 	<dependency>
       <groupId>org.catamarancode</groupId>
       <artifactId>catamaran-core</artifactId>
-      <version>1.1</version>
+      <version>1.2-SNAPSHOT</version>
     </dependency>
 	
     <dependency>
