@@ -10,7 +10,8 @@
   
   <!-- Keep web sessions alive until browser is closed. -->
   <session-config>
-    <session-timeout>0</session-timeout>
+  	<!-- two weeks -->
+    <session-timeout>20160</session-timeout>
   </session-config>
   	  	
   	<!-- Use this parameter to specify additional spring configuration files (in addition to /WEB-INF/spring-mvc-servlet.xml)   	
