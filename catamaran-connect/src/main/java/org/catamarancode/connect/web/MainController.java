@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.catamarancode.connect.entity.Person;
 import org.catamarancode.connect.entity.User;
@@ -49,8 +52,8 @@ public class MainController {
 	private MessageContext messageContext;
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public String slash(Map<String,Object> model) {
-    	return index(model);
+    public String slash(Map<String,Object> model, HttpServletRequest request) {
+    	return index(model, request);
     }
 
 	@RequestMapping(value = "/login", method = RequestMethod.GET)	
@@ -60,7 +63,7 @@ public class MainController {
 	}
     
 	@RequestMapping(value = "/login", method = RequestMethod.POST)	
-	public String logInPost(Map<String,Object> model, @RequestParam("email") String email, @RequestParam("password") String password) {
+	public String logInPost(HttpServletResponse response, Map<String,Object> model, @RequestParam("email") String email, @RequestParam("password") String password) {
 
 		List<User> users = User.objects.filter(Restrictions.eq("email", email));
 		// TODO: Use generics for this util method
@@ -76,6 +79,9 @@ public class MainController {
 		
 		// Success
 		userContext.setUserId(user.getId());
+		Cookie cookie = new Cookie(UserContext.USERID_COOKIE_NAME, String.valueOf(user.getId()));
+		response.addCookie(cookie);
+		
 		return "redirect:/index";
 	}
 	
@@ -87,9 +93,9 @@ public class MainController {
 	}
     
     @RequestMapping(value = "/index", method = RequestMethod.GET)
-    public String index(Map<String,Object> model) {
+    public String index(Map<String,Object> model, HttpServletRequest request) {
     	
-    	if (!userContext.isLoggedIn()) {
+    	if (!userContext.isLoggedIn(request)) {
     		return "redirect:/login";
     	}
     	userContext.prepareModel(model);

@@ -29,7 +29,7 @@
 		<listener-class>
 			org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
-
+	
 	<!-- This will cause Spring MVC to look for file /WEB-INF/spring-mvc-servlet.xml -->
 	<servlet>
         <servlet-name>spring-mvc</servlet-name>

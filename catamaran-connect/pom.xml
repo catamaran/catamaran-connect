@@ -112,14 +112,16 @@
 		<version>3.2.1</version>
 	</dependency>
 
-	<!-- conflicts with javaee-api-6.0		
+	<!-- conflicts with javaee-api-6.0
+	TODO: Remove after session testing, not needed anymore.
+	-->		
 	<dependency>
 		<groupId>servletapi</groupId>
 		<artifactId>servletapi</artifactId>
 		<version>2.4</version>
 		<scope>provided</scope>
 	</dependency>
-	-->
+	
 	
 		<!-- Begin: Spring Framework and required dependencies -->
 	<dependency>

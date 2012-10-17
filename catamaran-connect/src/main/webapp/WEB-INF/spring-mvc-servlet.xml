@@ -18,6 +18,7 @@
 
 
 <!-- Tells Spring MVC to keep hibernate sessions open until web requests are complete, thereby enabling use of hibernate lazy loading -->
+<!-- TODO: This can probably be removed, using the mvc: xml instead... -->
 <bean name="openSessionInViewInterceptor"
  class="org.springframework.orm.hibernate4.support.OpenSessionInViewInterceptor">
     <property name="sessionFactory">
