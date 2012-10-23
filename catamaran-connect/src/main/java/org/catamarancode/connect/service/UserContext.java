@@ -75,7 +75,7 @@ public class UserContext implements Serializable {
 				} else {
 					logger.debug(String.format("Workaround: Cookie JSESSIONID not found but retained user logged in state via cookie %s with value %d", USERID_COOKIE_NAME, userId));
 				}					
-			}
+			}			
 		}
 		
 		if (this.userId != null) {

@@ -80,6 +80,7 @@ public class MainController {
 		// Success
 		userContext.setUserId(user.getId());
 		Cookie cookie = new Cookie(UserContext.USERID_COOKIE_NAME, String.valueOf(user.getId()));
+		cookie.setMaxAge(2592000); // 30 days
 		response.addCookie(cookie);
 		
 		return "redirect:/index";
