@@ -28,7 +28,7 @@ and: http://richardchesterwood.blogspot.com/2011/03/using-sessions-in-spring-mvc
     <property name="locations">
         <list>
             <value>
-                file:///catamaran/servers/catamaran-connect/conf/application.properties
+                file:///catamaran/apps/catamaran-connect/conf/application.properties
             </value>
         </list>
     </property>
