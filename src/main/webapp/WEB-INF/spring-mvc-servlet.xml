@@ -48,7 +48,7 @@
  class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
     
     <!-- Proper setting for loading templates form within the webapp -->
-    <property name="templateLoaderPath" value="/WEB-INF/freemarker-www/"/>
+    <property name="templateLoaderPath" value="/WEB-INF/freemarker/"/>
     
     <!-- Temporary setting for seeing development changes right away without copying/building to the webapp
     NOTE: Deprecated way.  See build script build_local.sh for a better way

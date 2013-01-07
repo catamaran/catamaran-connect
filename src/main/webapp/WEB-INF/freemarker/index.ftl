@@ -23,7 +23,7 @@
             		No contacts, <a href="<@spring.url '/persons/create' />">add a new one</a> now!
             	</#if>
             	
-                <ul data-role="listview" data-inset="true">
+                <ul data-role="listview" data-inset="true" data-filter="true">
 				<#list dateGroups as dateGroup> 
 			       <li data-role="list-divider" role="heading">
 	                    ${dateGroup}
