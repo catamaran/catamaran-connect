@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.catamarancode.connect</groupId>
-  <artifactId>catamaran-connect</artifactId>
+  <groupId>com.scandilabs.connect</groupId>
+  <artifactId>connect-scandilabs-com</artifactId>
   <packaging>war</packaging>
-  <version>1.0</version>
-  <name>connect.caramarancode.org Web Application</name>
+  <version>1.0.0</version>
+  <name>Contact tracking web application</name>
   <url>http://maven.apache.org</url>
   
   <dependencies>
@@ -20,21 +20,21 @@
 	-->  	
 	  	
 	<dependency>
-      <groupId>org.catamarancode</groupId>
-      <artifactId>catamaran-core</artifactId>
-      <version>1.2-SNAPSHOT</version>
+      <groupId>com.scandilabs.framework</groupId>
+      <artifactId>scandilabs-core</artifactId>
+      <version>1.0.0</version>
     </dependency>
 	
     <dependency>
-      <groupId>org.catamarancode</groupId>
-      <artifactId>catamaran-mvc</artifactId>
-      <version>1.1</version>
+      <groupId>com.scandilabs.framework</groupId>
+      <artifactId>scandilabs-mvc</artifactId>
+      <version>1.0.0</version>
     </dependency>
 
     <dependency>
-      <groupId>org.catamarancode</groupId>
-      <artifactId>catamaran-entity</artifactId>
-      <version>2.0-SNAPSHOT</version>
+      <groupId>com.scandilabs.framework</groupId>
+      <artifactId>scandilabs-entity</artifactId>
+      <version>1.0.0</version>
     </dependency>
 	
 	<dependency>
